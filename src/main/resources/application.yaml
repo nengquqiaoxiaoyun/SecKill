@@ -12,7 +12,7 @@ spring:
       password: Zyt98218.
 
 mybatis: # 指定别名设置的包为所有entity
-  type-aliases-package: com.huakai.dto
+  type-aliases-package: com.huakai.controller.dto
   configuration:
     map-underscore-to-camel-case: true # 驼峰命名规范
   mapper-locations: # mapper映射文件位置

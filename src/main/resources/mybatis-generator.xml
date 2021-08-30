@@ -15,19 +15,19 @@
                 userId="root"
                 password="Zyt98218." />
 
-        <javaModelGenerator targetPackage="com.huakai.dto" targetProject="src/main/java"></javaModelGenerator>
+        <javaModelGenerator targetPackage="com.huakai.mapper.dataobject" targetProject="src/main/java"></javaModelGenerator>
 
         <sqlMapGenerator targetPackage="mapper"  targetProject="src/main/resources"></sqlMapGenerator>
 
         <javaClientGenerator targetPackage="com.huakai.mapper" targetProject="src/main/java" type="XMLMAPPER"></javaClientGenerator>
 
 
-        <table tableName="user_info" domainObjectName="User" enableCountByExample="false" enableUpdateByExample="false"
+        <table tableName="user_info" domainObjectName="UserDO" enableCountByExample="false" enableUpdateByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false">
         </table>
 
 
-        <table tableName="user_password" domainObjectName="UserPassword" enableCountByExample="false" enableUpdateByExample="false"
+        <table tableName="user_password" domainObjectName="UserPasswordDO" enableCountByExample="false" enableUpdateByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false">
         </table>
 
