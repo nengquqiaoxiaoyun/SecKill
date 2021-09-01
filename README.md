@@ -181,3 +181,137 @@ session已经设置，但是register时却获取不到
 xhrFields: {withCredentials: true}
 ```
 
+## 参数校验
+
+在需要使用的地方注入ValidatorImpl，调用valite方法进行校验。这样的方式只能对实体进行校验，实体需要加上相应的注解
+
+```java
+ ValidationResult validate = validator.validate(userDto);
+        if(validate.isHasErrors())
+            throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, validate.getErrMsg());
+```
+
+UserDTO
+
+```java
+    @NotBlank(message = "用户名不能为空")
+    private String name;
+
+    private Byte gender;
+
+    @Min(value = 0, message = "年龄过小")
+    @Max(value = 150, message = "年龄过大")
+    private Integer age;
+
+    @NotBlank(message = "手机不能为空")
+    @Pattern(regexp = "(?:(?:\\+|00)86)?1(?:(?:3[\\d])|(?:4[5-79])|(?:5[0-35-9])|(?:6[5-7])|(?:7[0-8])|(?:8[\\d])|(?:9[189]))\\d{8}", message = "请输入正确的手机号")
+    private String telephone;
+```
+
+添加依赖
+
+```java
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+```
+
+ValidationResult
+
+```java
+package com.huakai.valiator;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @author: huakaimay
+ * @since: 2021-09-01
+ */
+public class ValidationResult {
+    /**
+     * 校验结果是否有错
+     */
+    private boolean hasErrors = false;
+
+    /**
+     * 存放错误信息的map
+     */
+    private Map<String, String> errorMsgMap = new HashMap<>();
+
+    public boolean isHasErrors() {
+        return hasErrors;
+    }
+
+    /**
+     * 实现通用的通过格式化字符串信息获取错误结果的msg方法
+     */
+    public String getErrMsg() {
+        return StringUtils.join(errorMsgMap.values().toArray(), ",");
+    }
+
+
+    public void setHasErrors(boolean hasErrors) {
+        this.hasErrors = hasErrors;
+    }
+
+    public Map<String, String> getErrorMsgMap() {
+        return errorMsgMap;
+    }
+
+    public void setErrorMsgMap(Map<String, String> errorMsgMap) {
+        this.errorMsgMap = errorMsgMap;
+    }
+}
+```
+
+ValidatorImpl
+
+```java
+package com.huakai.valiator;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import java.util.Set;
+
+/**
+ * @author: huakaimay
+ * @since: 2021-09-01
+ */
+@Component
+public class ValidatorImpl implements InitializingBean {
+
+
+    private Validator validator;
+
+    public ValidationResult validate(Object bean) {
+        ValidationResult result = new ValidationResult();
+        Set<ConstraintViolation<Object>> constraintViolationSet = validator.validate(bean);
+        // 有参数说明有错误
+        if (constraintViolationSet.size() > 0) {
+            result.setHasErrors(true);
+            constraintViolationSet.forEach(constraintViolation -> {
+                String propertyName = constraintViolation.getPropertyPath().toString();
+                String errMsg = constraintViolation.getMessage();
+                result.getErrorMsgMap().put(propertyName, errMsg);
+            });
+        }
+        return result;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        // 初始化validator
+        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
+    }
+
+}
+```
+
