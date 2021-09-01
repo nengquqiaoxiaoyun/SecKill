@@ -45,10 +45,11 @@
                 data:{
                     "telphone":$("#telphone").val(),
                 },
+                xhrFields: {withCredentials: true},
                 success:function(data){
                     if(data.status == "success"){
                         alert("otp已经发送到了手机，请注意查收");
-                        window.location.href("register");
+                        window.location.href="register.html";
                     } else {
                         alert("otp发送失败，原因为" + data.data.errMsg);
                     }
