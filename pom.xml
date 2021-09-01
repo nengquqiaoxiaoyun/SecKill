@@ -92,7 +92,7 @@
                     <!-- Mybatis-Generator 工具配置文件的位置 -->
                     <configurationFile>src/main/resources/mybatis-generator.xml</configurationFile>
                     <verbose>true</verbose>
-                    <overwrite>true</overwrite>
+                    <overwrite>false</overwrite>
                 </configuration>
                 <dependencies>
                     <dependency>
