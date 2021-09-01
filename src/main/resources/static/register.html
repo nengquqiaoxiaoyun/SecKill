@@ -101,8 +101,9 @@
                     "name": name,
                     "gender": gender,
                     "age": age,
-                    "password": password
+                    "encryptPassword": password
                 },
+                xhrFields: {withCredentials: true},
                 success: function (data) {
                     if (data.status == "success") {
                         alert("注册成功");
