@@ -1,5 +1,6 @@
 package com.huakai.controller;
 
+import com.alibaba.druid.util.StringUtils;
 import com.huakai.controller.dto.UserDto;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
@@ -18,7 +19,7 @@ import java.util.Random;
  */
 @RestController
 @RequestMapping("/user")
-@CrossOrigin
+@CrossOrigin(allowCredentials = "true", originPatterns = "*")
 public class UserController {
 
 
@@ -35,7 +36,15 @@ public class UserController {
      * ajax不规定格式的话默认 Content-Type: "application/x-www-form-urlencoded"
      */
     @PostMapping(value = "/register")
-    public CommonReturnType register(UserDto userDto, @RequestParam("otpCode") String otpCode) {
+    public CommonReturnType register(UserDto userDto, @RequestParam("otpCode") String otpCode) throws BussinesssError {
+
+        String inSessionOtpCode = (String) request.getSession().getAttribute(userDto.getTelephone());
+        if (!StringUtils.equals(otpCode, inSessionOtpCode)) {
+             throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "otp验证失败");
+        }
+
+        userService.register(userDto);
+
         return CommonReturnType.create(null);
     }
 
