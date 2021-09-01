@@ -34,6 +34,15 @@
         from user_info
         where id = #{id,jdbcType=INTEGER}
     </select>
+
+    <select id="getUserByTelephone" parameterType="string" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_info
+        where telephone = #{telephone, jdbcType=VARCHAR}
+    </select>
+
+
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
         <!--
           WARNING - @mbggenerated

@@ -1,12 +1,16 @@
 package com.huakai.service.impl;
 
+import com.alibaba.druid.util.StringUtils;
 import com.huakai.controller.dto.UserDto;
+import com.huakai.error.BussinesssError;
+import com.huakai.error.ErrorEnum;
 import com.huakai.mapper.UserDOMapper;
 import com.huakai.mapper.UserPasswordDOMapper;
 import com.huakai.mapper.dataobject.UserDO;
 import com.huakai.mapper.dataobject.UserPasswordDO;
 import com.huakai.service.UserService;
-import org.apache.tomcat.util.security.MD5Encoder;
+import com.huakai.valiator.ValidationResult;
+import com.huakai.valiator.ValidatorImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import sun.misc.BASE64Encoder;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -58,6 +61,21 @@ public class UserServiceImpl implements UserService {
         userPasswordDO.setEncryptPassword(encodeByMyd(userDto.getEncryptPassword()));
         // insert to user_password
         userPasswordDOMapper.insertSelective(userPasswordDO);
+    }
+
+    @Override
+    public UserDO getUserByTelephone(String telephone) {
+        return userDOMapper.getUserByTelephone(telephone);
+    }
+
+    @Override
+    public boolean userExist(UserDO userDO, String password) {
+        String inTablePwd = userPasswordDOMapper.getPasswordByUid(userDO.getId());
+
+        if (StringUtils.equals(encodeByMyd(password), inTablePwd))
+            return true;
+
+        return false;
     }
 
     /**

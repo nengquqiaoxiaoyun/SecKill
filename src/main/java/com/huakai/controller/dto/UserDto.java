@@ -2,15 +2,26 @@ package com.huakai.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.validation.constraints.*;
+
 /**
  * @author: huakaimay
  * @since: 2021-08-30
  */
 public class UserDto {
     private Integer id;
+    
+    @NotBlank(message = "用户名不能为空")
     private String name;
+
     private Byte gender;
+
+    @Min(value = 0, message = "年龄过小")
+    @Max(value = 150, message = "年龄过大")
     private Integer age;
+
+    @NotBlank(message = "手机不能为空")
+    @Pattern(regexp = "(?:(?:\\+|00)86)?1(?:(?:3[\\d])|(?:4[5-79])|(?:5[0-35-9])|(?:6[5-7])|(?:7[0-8])|(?:8[\\d])|(?:9[189]))\\d{8}", message = "请输入正确的手机号")
     private String telephone;
     @JsonIgnore
     private String registerMode;

@@ -4,14 +4,18 @@ import com.alibaba.druid.util.StringUtils;
 import com.huakai.controller.dto.UserDto;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
+import com.huakai.mapper.dataobject.UserDO;
 import com.huakai.response.CommonReturnType;
 import com.huakai.service.UserService;
+import com.huakai.valiator.ValidationResult;
+import com.huakai.valiator.ValidatorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 /**
  * @author: huakaimay
@@ -29,6 +33,41 @@ public class UserController {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private ValidatorImpl validator;
+
+    @PostMapping(value = "/login")
+    public CommonReturnType login(@RequestParam("telephone") String telephone,
+                                  @RequestParam("password") String password) throws BussinesssError {
+
+
+        // 参数校验
+        if (org.apache.commons.lang3.StringUtils.isEmpty(telephone)
+                || org.apache.commons.lang3.StringUtils.isEmpty(password))
+            throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR);
+
+        // 根据手机号查询用于是否存在，不存在返回提示
+        UserDO userDO = userService.getUserByTelephone(telephone);
+        if (userDO == null) {
+            throw new BussinesssError(ErrorEnum.LOGIN_FAIL);
+        }
+
+        // 用户存在，验证密码
+        if (!userService.userExist(userDO, password)) {
+            throw new BussinesssError(ErrorEnum.LOGIN_FAIL);
+        }
+
+        /*
+        记录登录状态为true
+        将用户信息存入session
+         */
+        request.getSession().setAttribute("isLogin", true);
+        request.getSession().setAttribute("loginUser", userDO);
+
+
+        return CommonReturnType.create(null);
+    }
+
 
     /**
      * {@code @RequestBody }只能接受json格式，
@@ -38,9 +77,13 @@ public class UserController {
     @PostMapping(value = "/register")
     public CommonReturnType register(UserDto userDto, @RequestParam("otpCode") String otpCode) throws BussinesssError {
 
+        ValidationResult validate = validator.validate(userDto);
+        if(validate.isHasErrors())
+            throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, validate.getErrMsg());
+
         String inSessionOtpCode = (String) request.getSession().getAttribute(userDto.getTelephone());
         if (!StringUtils.equals(otpCode, inSessionOtpCode)) {
-             throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "otp验证失败");
+            throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "otp验证失败");
         }
 
         userService.register(userDto);
@@ -60,7 +103,16 @@ public class UserController {
     }
 
     @PostMapping(value = "/getotp", consumes = "application/x-www-form-urlencoded")
-    public CommonReturnType getOpt(@RequestParam("telphone") String telphone) {
+    public CommonReturnType getOpt(@RequestParam("telphone")  String telphone) throws BussinesssError {
+
+        // 手机号校验
+        String reg = "(?:(?:\\+|00)86)?1(?:(?:3[\\d])|(?:4[5-79])|(?:5[0-35-9])|(?:6[5-7])|(?:7[0-8])|(?:8[\\d])|(?:9[189]))\\d{8}";
+        boolean matches = Pattern.matches(reg, telphone);
+
+        if(!matches) {
+            throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "手机号码格式错误");
+        }
+
         // 生成随机数
         Random random = new Random();
         int num = random.nextInt(99999);

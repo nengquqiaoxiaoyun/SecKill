@@ -17,7 +17,8 @@ public enum ErrorEnum implements CommonError {
     PARAMTER_VALIDATION_ERROR(10001, "参数错误"),
     UNKNOWN_ERROR(10009, "未知错误"),
 
-    USER_NOT_EXIST(20001, "用户不存在");
+    USER_NOT_EXIST(20001, "用户不存在"),
+    LOGIN_FAIL(20002, "登录失败，手机号或密码错误");
 
     ErrorEnum(int errorCode, String errorMsg) {
         this.errorCode = errorCode;
