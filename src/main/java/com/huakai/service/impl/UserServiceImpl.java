@@ -31,6 +31,11 @@ public class UserServiceImpl implements UserService {
         return convertUserDo(userDO, password);
     }
 
+    @Override
+    public void register(UserDto userDto) {
+
+    }
+
 
     private UserDto convertUserDo(UserDO userDO, String password) {
 
