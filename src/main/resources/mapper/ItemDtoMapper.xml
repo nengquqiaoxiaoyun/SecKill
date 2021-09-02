@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huakai.mapper.ItemDtoMapper">
+
+    <resultMap id="BaseResultMap" type="com.huakai.controller.dto.ItemDto">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="sales" property="sales" jdbcType="INTEGER"/>
+        <result column="img_url" property="imgUrl" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="stock" property="stock" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id
+        , title, price, sales, img_url, description, stock
+    </sql>
+
+    <select id="listItemDto" resultMap="BaseResultMap">
+        select a.id,
+               title,
+               price,
+               sales,
+               img_url,
+               description,
+               stock
+        from item a,
+             item_stock b
+        where a.id = b.item_id
+        order by b.stock desc
+    </select>
+
+
+</mapper>

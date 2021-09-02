@@ -1,5 +1,8 @@
 package com.huakai.controller.dto;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -12,19 +15,25 @@ public class ItemDto {
     /**
      * 商品名
      */
+    @NotBlank(message = "商品名不能为空")
     private String title;
 
+    @NotNull(message = "价格不能为空")
     private BigDecimal price;
 
-    private String desc;
+    @NotBlank(message = "商品描述不能为空")
+    private String description;
 
-    private String imageUrl;
+    @NotBlank(message = "图片地址不能为空")
+    private String imgUrl;
 
     private Integer sales;
 
     /**
      * 库存
      */
+    @NotNull(message = "库存不能为空")
+    @Min(value = 0, message = "库存不能为负数")
     private Integer stock;
 
     public Integer getId() {
@@ -51,20 +60,20 @@ public class ItemDto {
         this.price = price;
     }
 
-    public String getDesc() {
-        return desc;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImgUrl() {
+        return imgUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
     public Integer getSales() {
