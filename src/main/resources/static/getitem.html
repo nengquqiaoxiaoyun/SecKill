@@ -17,7 +17,7 @@
     <h3 class="form-title">商品详情</h3>
     <div class="form-group">
         <div>
-            <label class="control-label" id="title"/>
+            <label class="control-label" id="title" />
         </div>
     </div>
     <div class="form-group">
@@ -28,33 +28,38 @@
     <div class="form-group">
         <label class="control-label">商品描述</label>
         <div>
-            <label class="control-label" id="description"/>
+            <label class="control-label" id="description" />
         </div>
     </div>
     <div id="normalPriceContainer" class="form-group">
         <label class="control-label">商品价格</label>
         <div>
-            <label class="control-label" id="price"/>
+            <label class="control-label" id="price" />
         </div>
     </div>
     <div class="form-group">
         <label class="control-label">商品库存</label>
         <div>
-            <label class="control-label" id="stock"/>
+            <label class="control-label" id="stock" />
         </div>
     </div>
     <div class="form-group">
         <label class="control-label">商品销量</label>
         <div>
-            <label class="control-label" id="sales"/>
+            <label class="control-label" id="sales" />
         </div>
+    </div>
+    <div class="form-actions">
+        <button class="btn blue" id="createOrder" type="submit">
+            立即购买
+        </button>
     </div>
 </div>
 </body>
 
 <script>
     var g_itemVO = {};
-    $(document).ready(function () {
+    $(document).ready(function() {
         // 获取商品详情
         $.ajax({
             type: "GET",
@@ -62,10 +67,10 @@
             data: {
                 "id": getParam("id"),
             },
-            xhrFields: {
-                withCredentials: true
+            xhrFields:{
+                withCredentials:true
             },
-            success: function (data) {
+            success: function(data) {
                 if (data.status == "success") {
                     g_itemVO = data.data;
                     reloadDom();
@@ -74,11 +79,40 @@
                     alert("获取信息失败，原因为" + data.data.errMsg);
                 }
             },
-            error: function (data) {
+            error: function(data) {
                 alert("获取信息失败，原因为" + data.responseText);
             }
         });
 
+
+        $("#createOrder").on("click", function() {
+            $.ajax({
+                type: "POST",
+                url: "http://localhost:8081/order/createorder",
+                contentType: "application/x-www-form-urlencoded",
+                data: {
+                    "itemId": g_itemVO.id,
+                    "amount": 1,
+                },
+                xhrFields:{
+                    withCredentials:true
+                },
+                success: function(data) {
+                    if (data.status == "success") {
+                        alert("下单成功");
+                        window.location.reload();
+                    } else {
+                        alert("下单失败，原因为" + data.data.errMsg);
+                        if (data.data.errCode == 20005) {
+                            window.location.href="login.html";
+                        }
+                    }
+                },
+                error: function(data) {
+                    alert("下单失败，原因为" + data.responseText);
+                }
+            });
+        });
 
     });
 

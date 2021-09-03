@@ -1,6 +1,7 @@
 package com.huakai.mapper;
 
 import com.huakai.mapper.dataobject.ItemDO;
+import org.apache.ibatis.annotations.Param;
 
 public interface ItemDOMapper {
     /**
@@ -50,4 +51,6 @@ public interface ItemDOMapper {
      * @mbggenerated Wed Sep 01 16:17:36 CST 2021
      */
     int updateByPrimaryKey(ItemDO record);
+
+    void increaseStock(@Param("itemId") Integer itemId, @Param("amount") Integer amount);
 }

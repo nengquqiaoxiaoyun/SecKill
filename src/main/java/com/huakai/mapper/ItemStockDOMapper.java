@@ -1,6 +1,7 @@
 package com.huakai.mapper;
 
 import com.huakai.mapper.dataobject.ItemStockDO;
+import org.apache.ibatis.annotations.Param;
 
 public interface ItemStockDOMapper {
     /**
@@ -53,4 +54,13 @@ public interface ItemStockDOMapper {
      * @mbggenerated Wed Sep 01 16:17:36 CST 2021
      */
     int updateByPrimaryKey(ItemStockDO record);
+
+    /**
+     * 删除对应item @param amout 数量的库存
+     *
+     * @return 作用记录数
+     * 0: 删除失败（库存不足）
+     * 1: 删除成功（一条）
+     */
+    int decreaseStock(@Param("itemId") Integer itemId, @Param("amount") Integer amount);
 }

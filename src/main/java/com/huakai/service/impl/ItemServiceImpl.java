@@ -80,6 +80,19 @@ public class ItemServiceImpl implements ItemService {
         return itemDto;
     }
 
+    @Override
+    @Transactional
+    public boolean decreaseStock(Integer itemId, Integer amount) {
+        int record = itemStockDOMapper.decreaseStock(itemId, amount);
+        return record > 0;
+    }
+
+    @Override
+    @Transactional
+    public void increaseStock(Integer itemId, Integer amount) {
+        itemDOMapper.increaseStock(itemId, amount);
+    }
+
 
     private ItemDto convertFromItemDo(ItemDO itemDO) {
 

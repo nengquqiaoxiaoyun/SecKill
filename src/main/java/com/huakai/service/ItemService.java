@@ -18,4 +18,12 @@ public interface ItemService {
      * 商品详情
      */
     ItemDto getItemDetailById(Integer id);
+
+    /**
+     * 落单减库存
+     * true: 删除成功
+     */
+    boolean decreaseStock(Integer itemId, Integer amount);
+
+    void increaseStock(Integer itemId, Integer amount);
 }
