@@ -1,12 +1,16 @@
 package com.huakai.service.impl;
 
 import com.huakai.controller.dto.ItemDto;
+import com.huakai.controller.dto.PromoDto;
 import com.huakai.mapper.ItemDOMapper;
 import com.huakai.mapper.ItemDtoMapper;
 import com.huakai.mapper.ItemStockDOMapper;
+import com.huakai.mapper.PromoDoMapper;
 import com.huakai.mapper.dataobject.ItemDO;
 import com.huakai.mapper.dataobject.ItemStockDO;
+import com.huakai.mapper.dataobject.PromoDo;
 import com.huakai.service.ItemService;
+import com.huakai.service.PromoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private ItemDtoMapper itemDtoMapper;
+
+    @Autowired
+    private PromoService promoService;
 
     @Override
     @Transactional
@@ -77,6 +84,15 @@ public class ItemServiceImpl implements ItemService {
 
         ItemDto itemDto = convertFromItemDo(itemDO);
         itemDto.setStock(itemStockDO.getStock());
+
+       // 秒杀信息
+        PromoDto promoDto = promoService.getPromoByItemId(id);
+        // 存在秒杀活动且未结束
+        if(promoDto != null && promoDto.getStatus().intValue() != 3) {
+            itemDto.setPromoDto(promoDto);
+        }
+
+        
         return itemDto;
     }
 

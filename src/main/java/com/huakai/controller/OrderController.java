@@ -27,7 +27,9 @@ public class OrderController {
     private HttpServletRequest request;
 
     @PostMapping("/createorder")
-    public CommonReturnType createOrder(@RequestParam("itemId")Integer itemId, @RequestParam("amount")Integer amount) throws BussinesssError {
+    public CommonReturnType createOrder(@RequestParam("itemId")Integer itemId,
+                                        @RequestParam(value = "promoId", required = false)Integer promoId,
+                                        @RequestParam("amount")Integer amount) throws BussinesssError {
 
 
         Boolean isLogin = (Boolean)request.getSession().getAttribute("isLogin");
@@ -36,7 +38,7 @@ public class OrderController {
 
         UserDO userDO = (UserDO)request.getSession().getAttribute("loginUser");
 
-        OrderDo orderDo = orderService.createOrder(userDO.getId(), itemId, amount);
+        OrderDo orderDo = orderService.createOrder(userDO.getId(), itemId, promoId, amount);
         return CommonReturnType.create(orderDo);
     }
 }

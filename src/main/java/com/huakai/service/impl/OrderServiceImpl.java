@@ -1,5 +1,6 @@
 package com.huakai.service.impl;
 
+import com.huakai.controller.dto.ItemDto;
 import com.huakai.controller.dto.UserDto;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
@@ -34,9 +35,6 @@ public class OrderServiceImpl implements OrderService {
     private UserDOMapper userDOMapper;
 
     @Autowired
-    private ItemDOMapper itemDOMapper;
-
-    @Autowired
     private ItemService itemService;
 
     @Autowired
@@ -47,7 +45,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDo createOrder(Integer uesrId, Integer itemId, Integer amount) throws BussinesssError {
+    public OrderDo createOrder(Integer uesrId, Integer itemId, Integer promoId, Integer amount) throws BussinesssError {
         // 参数校验
         if (amount < 1) {
             throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "购买数量有误");
@@ -57,8 +55,8 @@ public class OrderServiceImpl implements OrderService {
         if (userDO == null)
             throw new BussinesssError(ErrorEnum.USER_NOT_EXIST);
 
-        ItemDO itemDO = itemDOMapper.selectByPrimaryKey(itemId);
-        if (itemDO == null)
+        ItemDto itemDto = itemService.getItemDetailById(itemId);
+        if (itemDto == null)
             throw new BussinesssError(ErrorEnum.ITEM_NOT_EXIST);
 
         // 落单减库存
@@ -67,18 +65,34 @@ public class OrderServiceImpl implements OrderService {
             throw new BussinesssError(ErrorEnum.STOCK_NOT_ENOUGH);
         }
 
+        if (promoId != null) {
+            if (itemDto.getPromoDto().getId() != promoId)
+                throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "活动信息不正确");
+            else if (itemDto.getPromoDto().getStatus() != 2)
+                throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "活动信息不正确");
+
+
+        }
+
         // insert into order
         OrderDo orderDo = new OrderDo();
         orderDo.setId(generatorOrderNo());
         orderDo.setItemId(itemId);
         orderDo.setAmount(amount);
         orderDo.setUserId(uesrId);
-        orderDo.setPrice(itemDO.getPrice());
-        orderDo.setTotalPrice(itemDO.getPrice().multiply(new BigDecimal(amount.intValue())));
+
+        if (promoId != null) {
+            orderDo.setPromoId(promoId);
+            orderDo.setPrice(itemDto.getPromoDto().getPrice());
+        } else {
+            orderDo.setPrice(itemDto.getPrice());
+        }
+
+        orderDo.setTotalPrice(orderDo.getPrice().multiply(new BigDecimal(amount.intValue())));
         orderDoMapper.insertSelective(orderDo);
 
         // 商品增加商品销量
-        itemService.increaseStock(itemId,amount);
+        itemService.increaseStock(itemId, amount);
 
         // 返回订单
         return orderDo;

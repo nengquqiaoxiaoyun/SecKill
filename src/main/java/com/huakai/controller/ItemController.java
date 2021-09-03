@@ -1,6 +1,7 @@
 package com.huakai.controller;
 
 import com.huakai.controller.dto.ItemDto;
+import com.huakai.controller.dto.PromoDto;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
 import com.huakai.response.CommonReturnType;
@@ -57,7 +58,15 @@ public class ItemController {
 
         ItemDto itemDto = itemService.getItemDetailById(id);
 
+        PromoDto promoDto = itemDto.getPromoDto();
+        if (promoDto == null) {
+            PromoDto innerPromo = new PromoDto();
+            innerPromo.setStatus(0);
+            itemDto.setPromoDto(innerPromo);
+        }
+
         return CommonReturnType.create(itemDto);
+
     }
 
 }

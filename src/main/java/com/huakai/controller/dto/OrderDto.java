@@ -36,6 +36,12 @@ public class OrderDto {
      */
     private BigDecimal totalPrice;
 
+
+    /**
+     * 秒杀id
+     */
+    private Integer promoId;
+
     public String getId() {
         return id;
     }
@@ -82,5 +88,13 @@ public class OrderDto {
 
     public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public Integer getPromoId() {
+        return promoId;
+    }
+
+    public void setPromoId(Integer promoId) {
+        this.promoId = promoId;
     }
 }

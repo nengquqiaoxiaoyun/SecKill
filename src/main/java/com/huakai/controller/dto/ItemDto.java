@@ -30,6 +30,11 @@ public class ItemDto {
     private Integer sales;
 
     /**
+     * promoDto不为空表示含有秒杀活动
+     */
+    private PromoDto promoDto;
+
+    /**
      * 库存
      */
     @NotNull(message = "库存不能为空")
@@ -90,5 +95,13 @@ public class ItemDto {
 
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+
+    public PromoDto getPromoDto() {
+        return promoDto;
+    }
+
+    public void setPromoDto(PromoDto promoDto) {
+        this.promoDto = promoDto;
     }
 }
