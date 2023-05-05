@@ -1,5 +1,10 @@
 server:
   port: 8081
+  tomcat:
+    threads:
+      max: 600
+      min-spare: 50
+    accept-count: 500
 
 datasource:
   url: localhost:3306/seckill
@@ -9,7 +14,7 @@ spring:
     druid:
       url: jdbc:mysql://${datasource.url}?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
       username: root
-      password: Zyt98218.
+      password: 123456
 
 mybatis: # 指定别名设置的包为所有entity
   type-aliases-package: com.huakai.controller.dto

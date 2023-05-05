@@ -22,14 +22,14 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `item`;
 CREATE TABLE `item` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(64) NOT NULL DEFAULT '' COMMENT '商品名称',
-  `price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `sales` int(11) NOT NULL DEFAULT '0',
-  `img_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
-  `description` varchar(500) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                        `id` int(11) NOT NULL AUTO_INCREMENT,
+                        `title` varchar(64) NOT NULL DEFAULT '' COMMENT '商品名称',
+                        `price` decimal(10,2) NOT NULL DEFAULT '0.00',
+                        `sales` int(11) NOT NULL DEFAULT '0',
+                        `img_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci  NOT NULL DEFAULT '',
+                        `description` varchar(500) NOT NULL DEFAULT '',
+                        PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ;
 
 -- ----------------------------
 -- Records of item
@@ -44,11 +44,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `item_stock`;
 CREATE TABLE `item_stock` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `item_id` int(11) NOT NULL DEFAULT '0',
-  `stock` int(11) NOT NULL DEFAULT '0' COMMENT '库存',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                              `id` int(11) NOT NULL AUTO_INCREMENT,
+                              `item_id` int(11) NOT NULL DEFAULT '0',
+                              `stock` int(11) NOT NULL DEFAULT '0' COMMENT '库存',
+                              PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ;
 
 -- ----------------------------
 -- Records of item_stock
@@ -63,15 +63,15 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `order_info`;
 CREATE TABLE `order_info` (
-  `id` varchar(32) NOT NULL DEFAULT '',
-  `user_id` int(11) NOT NULL DEFAULT '0',
-  `item_id` int(11) NOT NULL DEFAULT '0',
-  `price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `amount` int(11) NOT NULL DEFAULT '0',
-  `total_price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `promo_id` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                              `id` varchar(32) NOT NULL DEFAULT '',
+                              `user_id` int(11) NOT NULL DEFAULT '0',
+                              `item_id` int(11) NOT NULL DEFAULT '0',
+                              `price` decimal(10,2) NOT NULL DEFAULT '0.00',
+                              `amount` int(11) NOT NULL DEFAULT '0',
+                              `total_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+                              `promo_id` int(11) NOT NULL DEFAULT '0',
+                              PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ;
 
 -- ----------------------------
 -- Records of order_info
@@ -85,14 +85,14 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `promo`;
 CREATE TABLE `promo` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `item_id` int(11) NOT NULL DEFAULT '0',
-  `promo_name` varchar(255) NOT NULL DEFAULT '',
-  `price` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `start_date` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
-  `end_date` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                         `id` int(11) NOT NULL AUTO_INCREMENT,
+                         `item_id` int(11) NOT NULL DEFAULT '0',
+                         `promo_name` varchar(255) NOT NULL DEFAULT '',
+                         `price` decimal(10,2) NOT NULL DEFAULT '0.00',
+                         `start_date` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
+                         `end_date` datetime NOT NULL DEFAULT '1000-01-01 00:00:00',
+                         PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ;
 
 -- ----------------------------
 -- Records of promo
@@ -106,11 +106,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sequence_info`;
 CREATE TABLE `sequence_info` (
-  `name` varchar(255) NOT NULL,
-  `current_value` int(11) NOT NULL DEFAULT '0',
-  `step` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                                 `name` varchar(255) NOT NULL,
+                                 `current_value` int(11) NOT NULL DEFAULT '0',
+                                 `step` int(11) NOT NULL DEFAULT '0',
+                                 PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ;
 
 -- ----------------------------
 -- Records of sequence_info
@@ -124,15 +124,15 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `user_info`;
 CREATE TABLE `user_info` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(64) NOT NULL DEFAULT '',
-  `gender` tinyint(4) NOT NULL DEFAULT '0' COMMENT '1男性 2女性',
-  `age` int(11) NOT NULL DEFAULT '0',
-  `telephone` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
-  `register_mode` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '// byphone,bywechat,byalipay\n',
-  `third_part_id` varchar(64) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                             `id` int(11) NOT NULL AUTO_INCREMENT,
+                             `name` varchar(64) NOT NULL DEFAULT '',
+                             `gender` tinyint(4) NOT NULL DEFAULT '0' COMMENT '1男性 2女性',
+                             `age` int(11) NOT NULL DEFAULT '0',
+                             `telephone` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci  NOT NULL DEFAULT '',
+                             `register_mode` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci  NOT NULL DEFAULT '' COMMENT '// byphone,bywechat,byalipay\n',
+                             `third_part_id` varchar(64) NOT NULL DEFAULT '',
+                             PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ;
 
 -- ----------------------------
 -- Records of user_info
@@ -147,11 +147,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `user_password`;
 CREATE TABLE `user_password` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `encrypt_password` varchar(128) NOT NULL DEFAULT '',
-  `user_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                                 `id` int(11) NOT NULL AUTO_INCREMENT,
+                                 `encrypt_password` varchar(128) NOT NULL DEFAULT '',
+                                 `user_id` int(11) NOT NULL,
+                                 PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ;
 
 -- ----------------------------
 -- Records of user_password

@@ -2,20 +2,16 @@ package com.huakai.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
 import com.huakai.controller.dto.UserDto;
-import com.huakai.error.BussinesssError;
-import com.huakai.error.ErrorEnum;
 import com.huakai.mapper.UserDOMapper;
 import com.huakai.mapper.UserPasswordDOMapper;
 import com.huakai.mapper.dataobject.UserDO;
 import com.huakai.mapper.dataobject.UserPasswordDO;
 import com.huakai.service.UserService;
-import com.huakai.valiator.ValidationResult;
-import com.huakai.valiator.ValidatorImpl;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sun.misc.BASE64Encoder;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -84,9 +80,8 @@ public class UserServiceImpl implements UserService {
     private String encodeByMyd(String str) {
         String encode = null;
         try {
-            BASE64Encoder base64Encoder = new BASE64Encoder();
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            encode = base64Encoder.encode(md5.digest(str.getBytes("utf-8")));
+            encode = Base64.encodeBase64String(md5.digest(str.getBytes("utf-8")));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {

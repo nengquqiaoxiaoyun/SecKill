@@ -13,7 +13,7 @@
                 driverClass="com.mysql.jdbc.Driver"
                 connectionURL="jdbc:mysql://localhost:3306/seckill"
                 userId="root"
-                password="Zyt98218."/>
+                password="123456"/>
 
         <javaModelGenerator targetPackage="com.huakai.mapper.dataobject"
                             targetProject="src/main/java"></javaModelGenerator>
