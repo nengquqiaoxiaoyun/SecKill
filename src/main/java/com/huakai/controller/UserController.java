@@ -9,6 +9,7 @@ import com.huakai.response.CommonReturnType;
 import com.huakai.service.UserService;
 import com.huakai.valiator.ValidationResult;
 import com.huakai.valiator.ValidatorImpl;
+import jdk.nashorn.internal.runtime.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,6 +83,8 @@ public class UserController {
             throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, validate.getErrMsg());
 
         String inSessionOtpCode = (String) request.getSession().getAttribute(userDto.getTelephone());
+
+        System.out.println("用户输入otp: " + otpCode + "系统otp: " + inSessionOtpCode);
         if (!StringUtils.equals(otpCode, inSessionOtpCode)) {
             throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "otp验证失败");
         }

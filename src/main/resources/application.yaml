@@ -1,15 +1,27 @@
 server:
-  port: 8081
+  port: 8089
   tomcat:
     threads:
       max: 600
       min-spare: 50
     accept-count: 500
+    accesslog:
+      enabled: true
+      directory: /opt/server/SecKill/tomasslog
+      pattern: '%h %l %u %t "%r" %s %b %D'
 
 datasource:
-  url: localhost:3306/seckill
+  url: 192.168.127.131/seckill
 
 spring:
+  redis:
+    host: 192.168.127.131
+    database: 1
+    port: 6379
+    jedis:
+      pool:
+        max-active: 50
+        min-idle: 20
   datasource:
     druid:
       url: jdbc:mysql://${datasource.url}?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
