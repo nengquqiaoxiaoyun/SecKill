@@ -1,6 +1,8 @@
 package com.huakai.controller;
 
 import com.alibaba.druid.util.StringUtils;
+import com.google.gson.Gson;
+import com.huakai.config.RedisService;
 import com.huakai.controller.dto.UserDto;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
@@ -9,13 +11,14 @@ import com.huakai.response.CommonReturnType;
 import com.huakai.service.UserService;
 import com.huakai.valiator.ValidationResult;
 import com.huakai.valiator.ValidatorImpl;
-import jdk.nashorn.internal.runtime.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -36,6 +39,9 @@ public class UserController {
 
     @Autowired
     private ValidatorImpl validator;
+
+    @Autowired
+    private RedisService redisService;
 
     @PostMapping(value = "/login")
     public CommonReturnType login(@RequestParam("telephone") String telephone,
@@ -59,14 +65,21 @@ public class UserController {
         }
 
         /*
+        这边修改成：若用户登陆成功酱对应的登陆信息和token一起存入redis
         记录登录状态为true
         将用户信息存入session
          */
-        request.getSession().setAttribute("isLogin", true);
-        request.getSession().setAttribute("loginUser", userDO);
+        // request.getSession().setAttribute("isLogin", true);
+        // request.getSession().setAttribute("loginUser", userDO);
 
 
-        return CommonReturnType.create(null);
+        // 生成登陆凭证token
+        String uuidToken = UUID.randomUUID().toString().replace("-", "");
+        // 建立token和用户登陆状态之间的联系
+        redisService.put(uuidToken, new Gson().toJson(userDO), 1, TimeUnit.HOURS);
+
+
+        return CommonReturnType.create(uuidToken);
     }
 
 
