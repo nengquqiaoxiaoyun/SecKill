@@ -1,5 +1,6 @@
 package com.huakai.config;
 
+import com.google.gson.Gson;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -66,6 +67,49 @@ public class RedisService {
      */
     public String get(String key){
         return stringRedisTemplate.opsForValue().get(key);
+    }
+
+
+    /**
+     * 读取缓存
+     * @param key
+     * @return
+     */
+    public <T> T get(String key, Class<T> clazz) {
+        Object value = null;
+        try {
+            value = stringRedisTemplate.opsForValue().get(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if(value != null){
+            Gson gson = new Gson();
+            return gson.fromJson(value.toString(), clazz);
+        }
+        return null;
+    }
+
+    /**
+     * 写入缓存
+     * @param key
+     * @param value
+     * @param expireTime 过期时间，单位秒（默认过期时间为0，即不过期）
+     * @return
+     */
+    public boolean set(String key, Object value, long expireTime) {
+        try {
+            Gson gson = new Gson();
+            String json = gson.toJson(value);
+            if (expireTime > 0) {
+                stringRedisTemplate.opsForValue().set(key, json, expireTime, TimeUnit.SECONDS);
+            } else {
+                stringRedisTemplate.opsForValue().set(key, json);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
