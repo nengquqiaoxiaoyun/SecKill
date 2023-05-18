@@ -79,7 +79,7 @@ public class ItemController {
                 throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "数据异常");
             }
         }
-        // 获取查询到的商品的优惠信息
+        // 获取查询到的商品的秒杀信息
         PromoDto promoDto = itemDto.getPromoDto();
         // 若秒杀信息为空，则默认设置为没有秒杀
         if (ObjectUtils.isEmpty(promoDto)) {
