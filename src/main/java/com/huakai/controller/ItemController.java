@@ -1,5 +1,7 @@
 package com.huakai.controller;
 
+import com.google.gson.Gson;
+import com.huakai.config.RedisService;
 import com.huakai.controller.dto.ItemDto;
 import com.huakai.controller.dto.PromoDto;
 import com.huakai.error.BussinesssError;
@@ -8,10 +10,12 @@ import com.huakai.response.CommonReturnType;
 import com.huakai.service.ItemService;
 import com.huakai.valiator.ValidationResult;
 import com.huakai.valiator.ValidatorImpl;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: huakaimay
@@ -22,6 +26,8 @@ import java.util.List;
 @CrossOrigin(allowCredentials = "true", originPatterns = "*")
 public class ItemController {
 
+    @Autowired
+    private RedisService redisService;
 
     @Autowired
     private ItemService itemService;
@@ -54,12 +60,22 @@ public class ItemController {
     }
 
     @GetMapping("/get")
-    public CommonReturnType get(@RequestParam("id") Integer id) {
+    public CommonReturnType get(@RequestParam("id") Integer id) throws BussinesssError {
 
-        ItemDto itemDto = itemService.getItemDetailById(id);
+        ItemDto itemDto = redisService.get("item_" + id, ItemDto.class);
+
+        if(ObjectUtils.isEmpty(itemDto)) {
+            itemDto =itemService.getItemDetailById(id);
+            if(!ObjectUtils.isEmpty(itemDto)) {
+                redisService.put("item_" + id, new Gson().toJson(itemDto), 10, TimeUnit.MINUTES);
+            } else {
+                throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "数据异常");
+            }
+        }
+
 
         PromoDto promoDto = itemDto.getPromoDto();
-        if (promoDto == null) {
+        if (ObjectUtils.isEmpty(promoDto)) {
             PromoDto innerPromo = new PromoDto();
             innerPromo.setStatus(0);
             itemDto.setPromoDto(innerPromo);
