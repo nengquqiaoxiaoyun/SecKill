@@ -8,9 +8,11 @@ import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
 import com.huakai.response.CommonReturnType;
 import com.huakai.service.ItemService;
+import com.huakai.service.LocalCacheService;
 import com.huakai.valiator.ValidationResult;
 import com.huakai.valiator.ValidatorImpl;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +27,9 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @CrossOrigin(allowCredentials = "true", originPatterns = "*")
 public class ItemController {
+
+    @Autowired
+    private LocalCacheService localCacheService;
 
     @Autowired
     private RedisService redisService;
@@ -68,17 +73,31 @@ public class ItemController {
      */
     @GetMapping("/get")
     public CommonReturnType get(@RequestParam("id") Integer id) throws BussinesssError {
-        // 从redis数据库查询id对应的数据信息
-        ItemDto itemDto = redisService.get("item_" + id, ItemDto.class);
-        // 若查询到的数据为空，则从数据库中查询，然后存入redis
-        if(ObjectUtils.isEmpty(itemDto)) {
-            itemDto =itemService.getItemDetailById(id);
-            if(!ObjectUtils.isEmpty(itemDto)) {
-                redisService.put("item_" + id, new Gson().toJson(itemDto), 10, TimeUnit.MINUTES);
-            } else {
-                throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "数据异常");
-            }
+
+        // 先从本地缓存中查询商品信息
+        ItemDto itemDto = (ItemDto) localCacheService.get("item_" + id);
+        if (!ObjectUtils.isEmpty(itemDto)) {
+            return  CommonReturnType.create(itemDto);
         }
+
+        // 如果本地缓存中不存在，则从 Redis 中查询
+        String itemJson = redisService.get("item_" + id);
+        if (!StringUtils.isEmpty(itemJson)) {
+            itemDto = new Gson().fromJson(itemJson, ItemDto.class);
+            localCacheService.put("item_" + id, itemDto);  // 将查询到的结果放入本地缓存
+            return CommonReturnType.create(itemDto);
+        }
+
+        // 如果 Redis 中也没有，则从数据库中查询
+        itemDto = itemService.getItemDetailById(id);
+        if (ObjectUtils.isEmpty(itemDto)) {
+            throw new BussinesssError(ErrorEnum.ITEM_NOT_EXIST);
+        }
+
+        // 将查询到的结果放入 Redis 和本地缓存中
+        redisService.put("item_" + id, new Gson().toJson(itemDto), 10, TimeUnit.MINUTES);
+        localCacheService.put("item_" + id, itemDto);
+
         // 获取查询到的商品的秒杀信息
         PromoDto promoDto = itemDto.getPromoDto();
         // 若秒杀信息为空，则默认设置为没有秒杀
