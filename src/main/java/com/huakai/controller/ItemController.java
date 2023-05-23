@@ -77,7 +77,7 @@ public class ItemController {
         // 先从本地缓存中查询商品信息
         ItemDto itemDto = (ItemDto) localCacheService.get("item_" + id);
         if (!ObjectUtils.isEmpty(itemDto)) {
-            return  CommonReturnType.create(itemDto);
+            return CommonReturnType.create(itemDto);
         }
 
         // 如果本地缓存中不存在，则从 Redis 中查询
