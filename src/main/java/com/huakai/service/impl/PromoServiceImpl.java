@@ -1,9 +1,15 @@
 package com.huakai.service.impl;
 
+import com.huakai.config.RedisService;
+import com.huakai.controller.dto.ItemDto;
 import com.huakai.controller.dto.PromoDto;
+import com.huakai.error.BussinesssError;
+import com.huakai.error.ErrorEnum;
 import com.huakai.mapper.PromoDoMapper;
 import com.huakai.mapper.dataobject.PromoDo;
+import com.huakai.service.ItemService;
 import com.huakai.service.PromoService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +28,12 @@ public class PromoServiceImpl implements PromoService {
 
     @Autowired
     private PromoDoMapper promoDoMapper;
+
+    @Autowired
+    private ItemService itemService;
+
+    @Autowired
+    private RedisService redisService;
 
     @Override
     public PromoDto getPromoByItemId(Integer itemId) {
@@ -58,15 +70,21 @@ public class PromoServiceImpl implements PromoService {
         return promoDto;
     }
 
-    public static void main(String[] args) {
+    @Override
+    public void publishPromo(Integer id) throws BussinesssError {
+        PromoDo promoDo = promoDoMapper.selectByPrimaryKey(id);
 
+        if(ObjectUtils.isEmpty(promoDo))
+            throw new BussinesssError(ErrorEnum.PROMO_NOT_EXIST);
 
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        String format = now.format(df);
-        System.out.println(format);
-        LocalDateTime parse = LocalDateTime.parse(format, df);
-        System.out.println(parse);
+        if(ObjectUtils.isEmpty(promoDo.getItemId()) || promoDo.getItemId() == 0) {
+            throw new BussinesssError(ErrorEnum.PROMO_NO_ITEM);
+        }
+
+        ItemDto item = itemService.getItemDetailById(promoDo.getItemId());
+        String key = "promo_item_stock_" + item.getId();
+        redisService.put(key, String.valueOf(item.getStock()));
 
     }
+
 }

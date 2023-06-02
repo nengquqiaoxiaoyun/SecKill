@@ -9,6 +9,7 @@ import com.huakai.error.ErrorEnum;
 import com.huakai.response.CommonReturnType;
 import com.huakai.service.ItemService;
 import com.huakai.service.LocalCacheService;
+import com.huakai.service.PromoService;
 import com.huakai.valiator.ValidationResult;
 import com.huakai.valiator.ValidatorImpl;
 import org.apache.commons.lang3.ObjectUtils;
@@ -39,6 +40,9 @@ public class ItemController {
 
     @Autowired
     private ValidatorImpl validator;
+
+    @Autowired
+    private PromoService promoService;
 
     @PostMapping("/create")
     public CommonReturnType create(ItemDto itemDto) throws BussinesssError {
@@ -109,5 +113,18 @@ public class ItemController {
         // 返回查询到的商品信息
         return CommonReturnType.create(itemDto);
     }
+
+
+    /**
+     * 发布活动
+     */
+    @GetMapping("/publishPromo")
+    public CommonReturnType publishPromo(@RequestParam("id") Integer id) throws BussinesssError {
+        promoService.publishPromo(id);
+        return CommonReturnType.create(null);
+    }
+
+
+
 
 }

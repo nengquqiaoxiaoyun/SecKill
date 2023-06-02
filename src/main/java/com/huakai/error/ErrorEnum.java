@@ -21,7 +21,9 @@ public enum ErrorEnum implements CommonError {
     LOGIN_FAIL(20002, "登录失败，手机号或密码错误"),
     ITEM_NOT_EXIST(20003, "商品不存在"),
     STOCK_NOT_ENOUGH(20004, "库存不足"),
-    USER_NOT_LOGIN(20005, "用户未登录")
+    USER_NOT_LOGIN(20005, "用户未登录"),
+    PROMO_NOT_EXIST(20006, "活动不存在"),
+    PROMO_NO_ITEM(20007, "活动没有对应商品")
     ;
 
     ErrorEnum(int errorCode, String errorMsg) {

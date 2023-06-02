@@ -37,10 +37,11 @@ public class RedisService {
 
     /**
      * set redis: string类型
-     * @param key key
+     *
+     * @param key   key
      * @param value value
      */
-    public void put(String key, String value){
+    public void put(String key, String value) {
         ValueOperations<String, String> valueOperations =
                 stringRedisTemplate.opsForValue();
         valueOperations.set(key, value);
@@ -49,12 +50,13 @@ public class RedisService {
 
     /**
      * set redis: string类型包含过期时间
+     *
      * @param key
      * @param value
      * @param timeout
      * @param unit
      */
-    public void put(String key, String value, long timeout, TimeUnit unit){
+    public void put(String key, String value, long timeout, TimeUnit unit) {
         ValueOperations<String, String> valueOperations =
                 stringRedisTemplate.opsForValue();
         valueOperations.set(key, value, timeout, unit);
@@ -62,16 +64,18 @@ public class RedisService {
 
     /**
      * get redis: string类型
+     *
      * @param key key
      * @return
      */
-    public String get(String key){
+    public String get(String key) {
         return stringRedisTemplate.opsForValue().get(key);
     }
 
 
     /**
      * 读取缓存
+     *
      * @param key
      * @return
      */
@@ -82,7 +86,7 @@ public class RedisService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(value != null){
+        if (value != null) {
             Gson gson = new Gson();
             return gson.fromJson(value.toString(), clazz);
         }
@@ -91,6 +95,7 @@ public class RedisService {
 
     /**
      * 写入缓存
+     *
      * @param key
      * @param value
      * @param expireTime 过期时间，单位秒（默认过期时间为0，即不过期）
@@ -114,46 +119,75 @@ public class RedisService {
 
     /**
      * set redis: hash类型
-     * @param key key
+     *
+     * @param key      key
      * @param filedKey filedkey
-     * @param value value
+     * @param value    value
      */
-    public void setHash(String key, String filedKey, String value){
+    public void setHash(String key, String filedKey, String value) {
         HashOperations<String, Object, Object> hashOperations =
                 stringRedisTemplate.opsForHash();
-        hashOperations.put(key,filedKey, value);
+        hashOperations.put(key, filedKey, value);
     }
+
     /**
      * get redis: hash类型
-     * @param key key
+     *
+     * @param key      key
      * @param filedkey filedkey
      * @return
      */
-    public String getHash(String key, String filedkey){
+    public String getHash(String key, String filedkey) {
         return (String) stringRedisTemplate.opsForHash().get(key, filedkey);
     }
 
 
     /**
      * set redis:list类型
-     * @param key key
+     *
+     * @param key   key
      * @param value value
      * @return
      */
-    public long setList(String key, String value){
+    public long setList(String key, String value) {
         ListOperations<String, String> listOperations =
                 stringRedisTemplate.opsForList();
         return listOperations.leftPush(key, value);
     }
+
     /**
      * get redis:list类型
-     * @param key key
+     *
+     * @param key   key
      * @param start start
-     * @param end end
+     * @param end   end
      * @return
      */
-    public List<String> getList(String key, long start, long end){
+    public List<String> getList(String key, long start, long end) {
         return stringRedisTemplate.opsForList().range(key, start, end);
+    }
+
+    /**
+     * 对 key 对应的值执行加操作
+     * @param key   key
+     * @param delta 加的值
+     * @return 加操作后的值
+     */
+    public Long increment(String key, long delta) {
+        ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+        return valueOperations.increment(key, delta);
+    }
+
+    /**
+     * 对 key 对应的值执行减操作
+     *
+     * @param key   key
+     * @param delta 减的值
+     * @return 减操作后的值
+     */
+    public Long decrement(String key, long delta) {
+        ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+        return valueOperations.decrement(key, delta);
     }
 
 

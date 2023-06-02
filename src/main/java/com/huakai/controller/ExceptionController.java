@@ -32,7 +32,7 @@ public class ExceptionController {
             hashMap.put("errMsg", ErrorEnum.UNKNOWN_ERROR.getErrMsg());
         }
 
-        System.out.println(ex);
+        System.out.println(ex + ", errMsg: " + hashMap.get("errMsg"));
 
 
         return CommonReturnType.create(hashMap, "fail");

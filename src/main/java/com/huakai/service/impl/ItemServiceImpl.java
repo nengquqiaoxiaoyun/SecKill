@@ -1,5 +1,6 @@
 package com.huakai.service.impl;
 
+import com.huakai.config.RedisService;
 import com.huakai.controller.dto.ItemDto;
 import com.huakai.controller.dto.PromoDto;
 import com.huakai.mapper.ItemDOMapper;
@@ -33,6 +34,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private PromoService promoService;
+
+    @Autowired
+    private RedisService redisService;
 
     @Override
     @Transactional
@@ -90,15 +94,20 @@ public class ItemServiceImpl implements ItemService {
             itemDto.setPromoDto(promoDto);
         }
 
-        
+
         return itemDto;
     }
 
     @Override
     @Transactional
     public boolean decreaseStock(Integer itemId, Integer amount) {
-        int record = itemStockDOMapper.decreaseStock(itemId, amount);
-        return record > 0;
+     //   int record = itemStockDOMapper.decreaseStock(itemId, amount);
+
+        String key = "promo_item_stock_" + itemId;
+        // result表示计算后的最新值
+        Long result = redisService.decrement(key, amount);
+
+        return result >= 0;
     }
 
     @Override
