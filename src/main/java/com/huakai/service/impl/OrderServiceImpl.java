@@ -62,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
         if (itemDto == null)
             throw new BussinesssError(ErrorEnum.ITEM_NOT_EXIST);
 
-        // 落单减库存
+        // 落单减库存这边需要先发布
         boolean success = itemService.decreaseStock(itemId, amount);
         if (!success) {
             throw new BussinesssError(ErrorEnum.STOCK_NOT_ENOUGH);

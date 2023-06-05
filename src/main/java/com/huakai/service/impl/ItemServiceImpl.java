@@ -1,6 +1,8 @@
 package com.huakai.service.impl;
 
+import com.google.gson.Gson;
 import com.huakai.config.RedisService;
+import com.huakai.controller.dto.ItemAmount;
 import com.huakai.controller.dto.ItemDto;
 import com.huakai.controller.dto.PromoDto;
 import com.huakai.mapper.ItemDOMapper;
@@ -8,6 +10,7 @@ import com.huakai.mapper.ItemDtoMapper;
 import com.huakai.mapper.ItemStockDOMapper;
 import com.huakai.mapper.dataobject.ItemDO;
 import com.huakai.mapper.dataobject.ItemStockDO;
+import com.huakai.mq.RocketmqProducer;
 import com.huakai.service.ItemService;
 import com.huakai.service.PromoService;
 import org.springframework.beans.BeanUtils;
@@ -37,6 +40,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private RocketmqProducer producer;
 
     @Override
     @Transactional
@@ -87,10 +93,10 @@ public class ItemServiceImpl implements ItemService {
         ItemDto itemDto = convertFromItemDo(itemDO);
         itemDto.setStock(itemStockDO.getStock());
 
-       // 秒杀信息
+        // 秒杀信息
         PromoDto promoDto = promoService.getPromoByItemId(id);
         // 存在秒杀活动且未结束
-        if(promoDto != null && promoDto.getStatus().intValue() != 3) {
+        if (promoDto != null && promoDto.getStatus().intValue() != 3) {
             itemDto.setPromoDto(promoDto);
         }
 
@@ -101,13 +107,30 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public boolean decreaseStock(Integer itemId, Integer amount) {
-     //   int record = itemStockDOMapper.decreaseStock(itemId, amount);
+        //   int record = itemStockDOMapper.decreaseStock(itemId, amount);
 
         String key = "promo_item_stock_" + itemId;
         // result表示计算后的最新值
         Long result = redisService.decrement(key, amount);
 
-        return result >= 0;
+        // redis删除失败
+        if (result < 0) {
+            redisService.increment(key, amount);
+            return false;
+        }
+
+        try {
+            ItemAmount item = new ItemAmount();
+            item.setId(itemId);
+            item.setAmount(amount);
+            producer.sendMessage("stock", new Gson().toJson(item));
+        } catch (Exception e) {
+            // 如果 RocketMQ 发送失败，则将库存增加回去
+            redisService.increment(key, amount);
+            return false;
+        }
+
+        return true;
     }
 
     @Override
