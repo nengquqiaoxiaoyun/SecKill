@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * 正常情况下consumer应该有一个单独服务来接收，这边是联系项目就不开项目做
  * @author: huakaimay
  * @since: 2023-06-05
  */

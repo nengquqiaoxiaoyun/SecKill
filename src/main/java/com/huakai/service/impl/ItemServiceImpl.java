@@ -108,6 +108,12 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public boolean decreaseStock(Integer itemId, Integer amount) {
         //   int record = itemStockDOMapper.decreaseStock(itemId, amount);
+        /*
+        这边应该查询商品是否发布，因为不是所有的东西都有活动的，
+        有活动的才需要发布，如果没有活动这边逻辑就错误
+        没有活动的就考虑直接发送异步消息，异步删除
+        这边就不实现了
+         */
 
         String key = "promo_item_stock_" + itemId;
         // result表示计算后的最新值
