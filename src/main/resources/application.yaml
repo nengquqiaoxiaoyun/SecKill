@@ -28,6 +28,13 @@ spring:
       username: root
       password: 123456
 
+rocketmq:
+  name-server: 192.168.127.131:9876
+  producer:
+    group: test-sotck_group
+  consumer:
+    group: stock_consumter_group
+
 mybatis: # 指定别名设置的包为所有entity
   type-aliases-package: com.huakai.controller.dto
   configuration:
