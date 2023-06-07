@@ -1,8 +1,6 @@
 package com.huakai.service.impl;
 
-import com.google.gson.Gson;
 import com.huakai.config.RedisService;
-import com.huakai.controller.dto.ItemAmount;
 import com.huakai.controller.dto.ItemDto;
 import com.huakai.controller.dto.PromoDto;
 import com.huakai.mapper.ItemDOMapper;
@@ -125,16 +123,16 @@ public class ItemServiceImpl implements ItemService {
             return false;
         }
 
-        try {
-            ItemAmount item = new ItemAmount();
-            item.setId(itemId);
-            item.setAmount(amount);
-            producer.sendMessage("stock", new Gson().toJson(item));
-        } catch (Exception e) {
-            // 如果 RocketMQ 发送失败，则将库存增加回去
-            redisService.increment(key, amount);
-            return false;
-        }
+        // try {
+        //     ItemAmount item = new ItemAmount();
+        //     item.setId(itemId);
+        //     item.setAmount(amount);
+        //     producer.sendMessage("stock", new Gson().toJson(item));
+        // } catch (Exception e) {
+        //     // 如果 RocketMQ 发送失败，则将库存增加回去
+        //     redisService.increment(key, amount);
+        //     return false;
+        // }
 
         return true;
     }

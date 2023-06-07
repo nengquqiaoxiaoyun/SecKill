@@ -2,6 +2,7 @@ package com.huakai.service.impl;
 
 import com.google.gson.Gson;
 import com.huakai.config.RedisService;
+import com.huakai.controller.dto.ItemAmount;
 import com.huakai.controller.dto.ItemDto;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
@@ -11,6 +12,7 @@ import com.huakai.mapper.UserDOMapper;
 import com.huakai.mapper.dataobject.OrderDo;
 import com.huakai.mapper.dataobject.SequenceDO;
 import com.huakai.mapper.dataobject.UserDO;
+import com.huakai.mq.RocketmqProducer;
 import com.huakai.service.ItemService;
 import com.huakai.service.OrderService;
 import org.apache.commons.lang3.ObjectUtils;
@@ -46,6 +48,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private RocketmqProducer producer;
+
     @Override
     @Transactional
     public OrderDo createOrder(Integer uesrId, Integer itemId, Integer promoId, Integer amount) throws BussinesssError {
@@ -62,12 +67,6 @@ public class OrderServiceImpl implements OrderService {
         if (itemDto == null)
             throw new BussinesssError(ErrorEnum.ITEM_NOT_EXIST);
 
-        // 落单减库存这边需要先发布
-        boolean success = itemService.decreaseStock(itemId, amount);
-        if (!success) {
-            throw new BussinesssError(ErrorEnum.STOCK_NOT_ENOUGH);
-        }
-
         if (promoId != null) {
             if (itemDto.getPromoDto().getId() != promoId)
                 throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "活动信息不正确");
@@ -75,7 +74,17 @@ public class OrderServiceImpl implements OrderService {
                 throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "活动信息不正确");
         }
 
+        // 落单减库存这边需要先发布
+        boolean success = itemService.decreaseStock(itemId, amount);
+        if (!success) {
+            throw new BussinesssError(ErrorEnum.STOCK_NOT_ENOUGH);
+        }
+
+
         // insert into order
+        /*
+        如果减库存异步发送之后，后续的逻辑出现问题事物回滚，而异步消息已经被消费导致库存不正确
+         */
         OrderDo orderDo = new OrderDo();
         orderDo.setId(generatorOrderNo());
         orderDo.setItemId(itemId);
@@ -94,6 +103,20 @@ public class OrderServiceImpl implements OrderService {
 
         // 商品增加商品销量
         itemService.increaseStock(itemId, amount);
+
+        // 将异步放到最后发送，这样的问题是事物还未结束，若事物发生异常前消息已经被消费导致数据不一致
+        String key = "promo_item_stock_" + itemId;
+        try {
+            ItemAmount item = new ItemAmount();
+            item.setId(itemId);
+            item.setAmount(amount);
+            producer.sendMessage("stock", new Gson().toJson(item));
+        } catch (Exception e) {
+            // 如果 RocketMQ 发送失败，则将库存增加回去
+            redisService.increment(key, amount);
+        }
+
+        // 事物commit可能异常
 
         // 返回订单
         return orderDo;
