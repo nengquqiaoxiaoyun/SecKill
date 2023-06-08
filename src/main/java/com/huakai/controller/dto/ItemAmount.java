@@ -7,6 +7,9 @@ package com.huakai.controller.dto;
 
 public class ItemAmount {
 
+    /**
+     * 商品id
+     */
     private Integer id;
 
     private Integer userId;

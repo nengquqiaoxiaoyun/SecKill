@@ -59,7 +59,7 @@ public class RocketmqProducer {
         });
     }
 
-    public boolean sendMessageInTransaction(String topic, String message){
+    public boolean sendMessageInTransaction(String topic, String message) {
         Message msg = new Message(topic, message.getBytes(Charset.forName("UTF-8")));
         TransactionSendResult sendResult = null;
         try {
@@ -75,13 +75,13 @@ public class RocketmqProducer {
         }
         System.out.printf("发送结果：%s%n, 事物状态：%s%n", sendResult.getSendStatus(), sendResult.getLocalTransactionState());
 
-        if(sendResult.getLocalTransactionState() == LocalTransactionState.COMMIT_MESSAGE)
+        if (sendResult.getLocalTransactionState() == LocalTransactionState.COMMIT_MESSAGE)
             return true;
 
         return false;
     }
 
-     class TransactionListenerImpl implements TransactionListener {
+    class TransactionListenerImpl implements TransactionListener {
         @Override
         public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
             // TODO 执行本地事务逻辑，返回 COMMIT_MESSAGE 或 ROLLBACK_MESSAGE 或 UNKNOW
@@ -100,7 +100,7 @@ public class RocketmqProducer {
          */
         @Override
         public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-            // 判断库存是否扣减成功，由此判断返回状态，若扣减成功则返回成功，为扣减成功回滚
+            // 判断库存是否扣减成功，由此判断返回状态，若扣减成功则返回成功，未扣减成功回滚
             String jsonMsg = new String(msg.getBody());
             ItemAmount itemAmount = new Gson().fromJson(jsonMsg, ItemAmount.class);
 
