@@ -9,6 +9,10 @@ public class ItemAmount {
 
     private Integer id;
 
+    private Integer userId;
+
+    private Integer promoId;
+
     private Integer amount;
 
 
@@ -26,5 +30,21 @@ public class ItemAmount {
 
     public void setAmount(Integer amount) {
         this.amount = amount;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    public Integer getPromoId() {
+        return promoId;
+    }
+
+    public void setPromoId(Integer promoId) {
+        this.promoId = promoId;
     }
 }

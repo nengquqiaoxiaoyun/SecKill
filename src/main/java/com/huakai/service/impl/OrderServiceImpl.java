@@ -2,7 +2,6 @@ package com.huakai.service.impl;
 
 import com.google.gson.Gson;
 import com.huakai.config.RedisService;
-import com.huakai.controller.dto.ItemAmount;
 import com.huakai.controller.dto.ItemDto;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
@@ -105,18 +104,19 @@ public class OrderServiceImpl implements OrderService {
         itemService.increaseStock(itemId, amount);
 
         // 将异步放到最后发送，这样的问题是事物还未结束，若事物发生异常前消息已经被消费导致数据不一致
-        String key = "promo_item_stock_" + itemId;
-        try {
-            ItemAmount item = new ItemAmount();
-            item.setId(itemId);
-            item.setAmount(amount);
-            producer.sendMessage("stock", new Gson().toJson(item));
-        } catch (Exception e) {
-            // 如果 RocketMQ 发送失败，则将库存增加回去
-            redisService.increment(key, amount);
-        }
+        // String key = "promo_item_stock_" + itemId;
+        // try {
+        //     ItemAmount item = new ItemAmount();
+        //     item.setId(itemId);
+        //     item.setAmount(amount);
+        //     producer.sendMessage("stock", new Gson().toJson(item));
+        // } catch (Exception e) {
+        //     // 如果 RocketMQ 发送失败，则将库存增加回去
+        //     redisService.increment(key, amount);
+        // }
 
         // 事物commit可能异常
+
 
         // 返回订单
         return orderDo;
