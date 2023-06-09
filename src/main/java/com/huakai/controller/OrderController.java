@@ -64,6 +64,8 @@ public class OrderController {
         itemAmount.setPromoId(promoId);
         itemAmount.setAmount(amount);
 
+        // 提前生成库存入库流水
+
         if(!producer.sendMessageInTransaction("stock", new Gson().toJson(itemAmount))) {
             String key = "promo_item_stock_" + itemAmount.getId();
             redisService.increment(key, itemAmount.getAmount());

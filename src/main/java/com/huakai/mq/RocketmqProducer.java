@@ -96,7 +96,7 @@ public class RocketmqProducer {
         }
 
         /**
-         * 检查本地事务状态
+         * 检查本地事务状态, 若一段时间没有收到 commit或者rollback就会走此方法
          */
         @Override
         public LocalTransactionState checkLocalTransaction(MessageExt msg) {

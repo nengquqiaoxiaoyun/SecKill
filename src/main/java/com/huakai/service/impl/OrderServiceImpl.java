@@ -118,6 +118,9 @@ public class OrderServiceImpl implements OrderService {
         // 事物commit可能异常
 
 
+        // 修改流水状态为成功
+
+
         // 返回订单
         return orderDo;
     }
