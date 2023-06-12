@@ -117,6 +117,13 @@ public class ItemServiceImpl implements ItemService {
         // result表示计算后的最新值
         Long result = redisService.decrement(key, amount);
 
+
+        // 最后一件库存
+        if (result == 0) {
+            redisService.put("promo_stock_zero", "true");
+            return true;
+        }
+
         // redis删除失败
         if (result < 0) {
             redisService.increment(key, amount);

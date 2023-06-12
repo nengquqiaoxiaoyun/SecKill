@@ -129,13 +129,6 @@ public class OrderServiceImpl implements OrderService {
         stockLogDO.setStatus((byte) 2);
         stockLogDOMapper.updateByPrimaryKeySelective(stockLogDO);
 
-
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         // 返回订单
         return orderDo;
     }

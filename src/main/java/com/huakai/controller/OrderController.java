@@ -73,6 +73,12 @@ public class OrderController {
 
     @Transactional(rollbackFor = Exception.class)
     private void handleStockRequest(int itemId, int promoId, int amount, int userId) throws BussinesssError {
+
+        if(redisService.hasKey("promo_stock_zero"))
+            throw new BussinesssError(ErrorEnum.STOCK_NOT_ENOUGH);
+
+
+        // 生成流水前判断库存是否充足，没有判断会导致多余的数据生成
         String stockLogId = UUID.randomUUID().toString().replace("-", "");
         // 提前生成库存入库流水
         StockLogDO stockLogDO = new StockLogDO();

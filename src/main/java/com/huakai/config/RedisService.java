@@ -131,6 +131,16 @@ public class RedisService {
     }
 
     /**
+     * 判断redis中是否存在指定的key
+     *
+     * @param key 要检查的key
+     * @return 如果存在返回true，否则返回false
+     */
+    public boolean hasKey(String key) {
+        return stringRedisTemplate.hasKey(key);
+    }
+
+    /**
      * get redis: hash类型
      *
      * @param key      key
@@ -169,6 +179,7 @@ public class RedisService {
 
     /**
      * 对 key 对应的值执行加操作
+     *
      * @param key   key
      * @param delta 加的值
      * @return 加操作后的值
