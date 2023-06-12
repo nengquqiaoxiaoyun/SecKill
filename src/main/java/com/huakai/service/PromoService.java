@@ -14,6 +14,10 @@ public interface PromoService {
      */
     PromoDto getPromoByItemId(Integer itemId);
 
+    /**
+     * 生成秒杀令牌
+     */
+    String generateScToken(Integer promoId, Integer itemId, Integer userId) throws BussinesssError;
 
     /**
      * 活动发布

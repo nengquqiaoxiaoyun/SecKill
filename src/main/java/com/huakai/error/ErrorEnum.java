@@ -24,6 +24,7 @@ public enum ErrorEnum implements CommonError {
     USER_NOT_LOGIN(20005, "用户未登录"),
     PROMO_NOT_EXIST(20006, "活动不存在"),
     PROMO_NO_ITEM(20007, "活动没有对应商品"),
+    PROMO_TOKEN_ERROR(30002, "活动令牌获取失败"),
     MQ_SEND_FAIL(30001, "异步消息发送失败")
     ;
 

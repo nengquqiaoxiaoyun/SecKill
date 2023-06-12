@@ -12,7 +12,6 @@ import com.huakai.mapper.UserDOMapper;
 import com.huakai.mapper.dataobject.OrderDo;
 import com.huakai.mapper.dataobject.SequenceDO;
 import com.huakai.mapper.dataobject.StockLogDO;
-import com.huakai.mapper.dataobject.UserDO;
 import com.huakai.mq.RocketmqProducer;
 import com.huakai.service.ItemService;
 import com.huakai.service.OrderService;
@@ -55,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private StockLogDOMapper stockLogDOMapper;
 
+
     @Override
     @Transactional
     public OrderDo createOrder(Integer uesrId, Integer itemId, Integer promoId, Integer amount, String stockLogId) throws BussinesssError {
@@ -62,10 +62,6 @@ public class OrderServiceImpl implements OrderService {
         if (amount < 1) {
             throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "购买数量有误");
         }
-
-        UserDO userDO = userInCache(uesrId);
-        if (userDO == null)
-            throw new BussinesssError(ErrorEnum.USER_NOT_EXIST);
 
         ItemDto itemDto = itemInCache(itemId);
         if (itemDto == null)
@@ -102,6 +98,7 @@ public class OrderServiceImpl implements OrderService {
             orderDo.setPrice(itemDto.getPrice());
         }
 
+        // 下面两个操作都可以异步化
         orderDo.setTotalPrice(orderDo.getPrice().multiply(new BigDecimal(amount.intValue())));
         orderDoMapper.insertSelective(orderDo);
 
@@ -162,21 +159,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    /**
-     * 缓存用户信息
-     */
-    private UserDO userInCache(Integer uesrId) {
 
-        String cacheKey = "user_valited_" + uesrId;
-        UserDO userDO = redisService.get(cacheKey, UserDO.class);
-
-        if(ObjectUtils.isEmpty(userDO)) {
-            userDO = userDOMapper.selectByPrimaryKey(uesrId);
-            redisService.put(cacheKey, new Gson().toJson(userDO), 10, TimeUnit.MINUTES);
-        }
-
-        return userDO;
-    }
     /**
      * 缓存商品信息
      */
