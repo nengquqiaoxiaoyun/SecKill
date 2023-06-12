@@ -5,6 +5,8 @@ import com.huakai.config.RedisService;
 import com.huakai.controller.dto.ItemAmount;
 import com.huakai.error.BussinesssError;
 import com.huakai.excep.RocketMQSendFailedException;
+import com.huakai.mapper.StockLogDOMapper;
+import com.huakai.mapper.dataobject.StockLogDO;
 import com.huakai.service.OrderService;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.*;
@@ -33,6 +35,9 @@ public class RocketmqProducer {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private StockLogDOMapper stockLogDOMapper;
 
     @PostConstruct
     public void init() throws Exception {
@@ -88,8 +93,14 @@ public class RocketmqProducer {
             String jsMsg = (String) arg;
             ItemAmount itemAmount = new Gson().fromJson(jsMsg, ItemAmount.class);
             try {
-                orderService.createOrder(itemAmount.getUserId(), itemAmount.getId(), itemAmount.getPromoId(), itemAmount.getAmount());
+                orderService.createOrder(itemAmount.getUserId(), itemAmount.getId(), itemAmount.getPromoId(), itemAmount.getAmount(), itemAmount.getStockLogId());
             } catch (BussinesssError e) {
+                e.printStackTrace();
+                StockLogDO stockLogDO = new StockLogDO();
+                stockLogDO.setStockLogId(itemAmount.getStockLogId());
+                stockLogDO.setStatus((byte) 3);
+                stockLogDOMapper.updateByPrimaryKeySelective(stockLogDO);
+
                 return LocalTransactionState.ROLLBACK_MESSAGE;
             }
             return LocalTransactionState.COMMIT_MESSAGE;
@@ -103,9 +114,22 @@ public class RocketmqProducer {
             // 判断库存是否扣减成功，由此判断返回状态，若扣减成功则返回成功，未扣减成功回滚
             String jsonMsg = new String(msg.getBody());
             ItemAmount itemAmount = new Gson().fromJson(jsonMsg, ItemAmount.class);
+            StockLogDO stockLogDO = stockLogDOMapper.selectByPrimaryKey(itemAmount.getStockLogId());
 
+            if(stockLogDO == null)
+                return LocalTransactionState.UNKNOW;
 
-            return LocalTransactionState.COMMIT_MESSAGE;
+            // 1：初始化状态，2：下单扣减库存成功，3：下单回滚
+            Byte status = stockLogDO.getStatus();
+
+            if (status == 2)
+                return LocalTransactionState.COMMIT_MESSAGE;
+
+            if(status == 1)
+                return LocalTransactionState.UNKNOW;
+
+            return LocalTransactionState.ROLLBACK_MESSAGE;
+
         }
     }
 }

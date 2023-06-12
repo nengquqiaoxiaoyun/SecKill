@@ -7,9 +7,11 @@ import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
 import com.huakai.mapper.OrderDoMapper;
 import com.huakai.mapper.SequenceDOMapper;
+import com.huakai.mapper.StockLogDOMapper;
 import com.huakai.mapper.UserDOMapper;
 import com.huakai.mapper.dataobject.OrderDo;
 import com.huakai.mapper.dataobject.SequenceDO;
+import com.huakai.mapper.dataobject.StockLogDO;
 import com.huakai.mapper.dataobject.UserDO;
 import com.huakai.mq.RocketmqProducer;
 import com.huakai.service.ItemService;
@@ -50,9 +52,12 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private RocketmqProducer producer;
 
+    @Autowired
+    private StockLogDOMapper stockLogDOMapper;
+
     @Override
     @Transactional
-    public OrderDo createOrder(Integer uesrId, Integer itemId, Integer promoId, Integer amount) throws BussinesssError {
+    public OrderDo createOrder(Integer uesrId, Integer itemId, Integer promoId, Integer amount, String stockLogId) throws BussinesssError {
         // 参数校验
         if (amount < 1) {
             throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "购买数量有误");
@@ -117,9 +122,19 @@ public class OrderServiceImpl implements OrderService {
 
         // 事物commit可能异常
 
-
         // 修改流水状态为成功
+        StockLogDO stockLogDO = new StockLogDO();
+        stockLogDO.setStockLogId(stockLogId);
+        // 1：初始化状态，2：下单扣减库存成功，3：下单回滚
+        stockLogDO.setStatus((byte) 2);
+        stockLogDOMapper.updateByPrimaryKeySelective(stockLogDO);
 
+
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         // 返回订单
         return orderDo;

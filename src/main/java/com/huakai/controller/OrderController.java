@@ -5,17 +5,20 @@ import com.huakai.config.RedisService;
 import com.huakai.controller.dto.ItemAmount;
 import com.huakai.error.BussinesssError;
 import com.huakai.error.ErrorEnum;
-import com.huakai.mapper.dataobject.OrderDo;
+import com.huakai.mapper.dataobject.StockLogDO;
 import com.huakai.mapper.dataobject.UserDO;
 import com.huakai.mq.RocketmqProducer;
 import com.huakai.response.CommonReturnType;
 import com.huakai.service.OrderService;
+import com.huakai.service.StockLogService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
 /**
  * @author: huakaimay
@@ -38,6 +41,9 @@ public class OrderController {
     @Autowired
     private RocketmqProducer producer;
 
+    @Autowired
+    private StockLogService stockLogService;
+
     @PostMapping("/createorder")
     public CommonReturnType createOrder(@RequestParam("itemId") Integer itemId,
                                         @RequestParam(value = "promoId", required = false) Integer promoId,
@@ -58,21 +64,39 @@ public class OrderController {
         UserDO userDO = new Gson().fromJson(userDOStr, UserDO.class);
         // OrderDo orderDo = orderService.createOrder(userDO.getId(), itemId, promoId, amount);
 
+        // 处理库存请求
+        handleStockRequest(itemId, promoId, amount, userDO.getId());
+
+        return CommonReturnType.create(null);
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    private void handleStockRequest(int itemId, int promoId, int amount, int userId) throws BussinesssError {
+        String stockLogId = UUID.randomUUID().toString().replace("-", "");
+        // 提前生成库存入库流水
+        StockLogDO stockLogDO = new StockLogDO();
+        stockLogDO.setStockLogId(stockLogId);
+        stockLogDO.setAmount(amount);
+        stockLogDO.setItemId(itemId);
+        // 1：初始化状态，2：下单扣减库存成功，3：下单回滚
+        stockLogDO.setStatus((byte) 1);
+        stockLogService.createStock(stockLogDO);
+
+
+        // 发送MQ消息
         ItemAmount itemAmount = new ItemAmount();
-        itemAmount.setUserId(userDO.getId());
+        itemAmount.setUserId(userId);
         itemAmount.setId(itemId);
         itemAmount.setPromoId(promoId);
         itemAmount.setAmount(amount);
+        itemAmount.setStockLogId(stockLogId);
 
-        // 提前生成库存入库流水
-
-        if(!producer.sendMessageInTransaction("stock", new Gson().toJson(itemAmount))) {
+        if (!producer.sendMessageInTransaction("stock", new Gson().toJson(itemAmount))) {
             String key = "promo_item_stock_" + itemAmount.getId();
             redisService.increment(key, itemAmount.getAmount());
             throw new BussinesssError(ErrorEnum.MQ_SEND_FAIL);
         }
-
-
-        return CommonReturnType.create(null);
     }
+
 }

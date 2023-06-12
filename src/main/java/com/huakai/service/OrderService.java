@@ -9,6 +9,6 @@ import com.huakai.mapper.dataobject.OrderDo;
  */
 public interface OrderService {
 
-    OrderDo createOrder(Integer uesrId, Integer itemId, Integer promoId, Integer amount) throws BussinesssError;
+    OrderDo createOrder(Integer uesrId, Integer itemId, Integer promoId, Integer amount, String stockLogId) throws BussinesssError;
 
 }

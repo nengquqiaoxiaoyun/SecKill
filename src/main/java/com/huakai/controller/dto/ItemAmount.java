@@ -18,6 +18,8 @@ public class ItemAmount {
 
     private Integer amount;
 
+    private String stockLogId;
+
 
     public Integer getId() {
         return id;
@@ -49,5 +51,13 @@ public class ItemAmount {
 
     public void setPromoId(Integer promoId) {
         this.promoId = promoId;
+    }
+
+    public String getStockLogId() {
+        return stockLogId;
+    }
+
+    public void setStockLogId(String stockLogId) {
+        this.stockLogId = stockLogId;
     }
 }
