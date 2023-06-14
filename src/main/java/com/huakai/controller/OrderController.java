@@ -18,8 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author: huakaimay
@@ -45,9 +50,15 @@ public class OrderController {
     @Autowired
     private StockLogService stockLogService;
 
-
     @Autowired
     private PromoService promoService;
+
+    private ExecutorService executorService;
+
+    @PostConstruct
+    private void init() {
+        executorService = Executors.newFixedThreadPool(20);
+    }
 
     @PostMapping("/createorder")
     public CommonReturnType createOrder(@RequestParam("itemId") Integer itemId,
@@ -55,7 +66,6 @@ public class OrderController {
                                         @RequestParam("amount") Integer amount,
                                         @RequestParam(value = "promoToken", required = false) String promoToken,
                                         @RequestParam("token") String token) throws BussinesssError {
-
 
 
         if (StringUtils.isEmpty(token))
@@ -72,27 +82,39 @@ public class OrderController {
         // OrderDo orderDo = orderService.createOrder(userDO.getId(), itemId, promoId, amount);
 
         // 秒杀活动不是所有的商品都有的，所有promotoken是非必填
-        if(promoToken != null) {
+        if (promoToken != null) {
             String promoTokenInCache = redisService.get("promo_token_" + promoId + "_itemId_ " + itemId + "_userId_" + userDO.getId());
-            if(promoTokenInCache == null) {
+            if (promoTokenInCache == null) {
                 System.out.println("缓存没有token");
                 throw new BussinesssError(ErrorEnum.USER_NOT_LOGIN);
             }
 
-            if(!promoToken.equals(promoTokenInCache))
+            if (!promoToken.equals(promoTokenInCache))
                 throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "秒杀令牌错误");
         }
 
-        // 处理库存请求
-        handleStockRequest(itemId, promoId, amount, userDO.getId());
+        Future<Object> future = executorService.submit(() -> {
+            // 处理库存请求
+            handleStockRequest(itemId, promoId, amount, userDO.getId());
+            return null;
+        });
+
+        try {
+            future.get();
+        } catch (InterruptedException e) {
+            throw new BussinesssError(ErrorEnum.UNKNOWN_ERROR);
+        } catch (ExecutionException e) {
+            throw new BussinesssError(ErrorEnum.UNKNOWN_ERROR);
+        }
+
 
         return CommonReturnType.create(null);
     }
 
     @PostMapping("/generateToken")
     public CommonReturnType generateToken(@RequestParam("itemId") Integer itemId,
-                                        @RequestParam(value = "promoId", required = false) Integer promoId,
-                                        @RequestParam("token") String token) throws BussinesssError {
+                                          @RequestParam(value = "promoId", required = false) Integer promoId,
+                                          @RequestParam("token") String token) throws BussinesssError {
 
         if (StringUtils.isEmpty(token))
             throw new BussinesssError(ErrorEnum.USER_NOT_LOGIN);
@@ -104,10 +126,10 @@ public class OrderController {
 
         UserDO userDO = new Gson().fromJson(userDOStr, UserDO.class);
         // 有活动时生成令牌
-        if(promoId != null) {
+        if (promoId != null) {
             // 校验并生成令牌
             String promoToken = promoService.generateScToken(promoId, itemId, userDO.getId());
-            if(promoToken == null) {
+            if (promoToken == null) {
                 throw new BussinesssError(ErrorEnum.PROMO_TOKEN_ERROR);
             }
 
@@ -123,7 +145,7 @@ public class OrderController {
     @Transactional(rollbackFor = Exception.class)
     private void handleStockRequest(int itemId, int promoId, int amount, int userId) throws BussinesssError {
 
-        if(redisService.hasKey("promo_stock_zero"))
+        if (redisService.hasKey("promo_stock_zero"))
             throw new BussinesssError(ErrorEnum.STOCK_NOT_ENOUGH);
 
 
