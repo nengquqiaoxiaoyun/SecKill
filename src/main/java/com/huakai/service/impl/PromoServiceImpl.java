@@ -77,7 +77,7 @@ public class PromoServiceImpl implements PromoService {
     }
 
     /**
-     * 逻辑验证
+     * 生成令牌
      */
     @Override
     public String generateScToken(Integer promoId, Integer itemId, Integer userId) throws BussinesssError {
@@ -89,6 +89,11 @@ public class PromoServiceImpl implements PromoService {
         PromoDto promoDto = new PromoDto();
         PromoDo promoDo = promoDoMapper.selectByPrimaryKey(promoId);
         if (promoDo == null)
+            return null;
+
+        // 控制流量大闸，仍有余量时才可以创建令牌
+        String itemStock = redisService.get("promo_door_count_" + itemId);
+        if(Integer.valueOf(itemStock) <= 0)
             return null;
 
         BeanUtils.copyProperties(promoDo, promoDto);
@@ -135,6 +140,9 @@ public class PromoServiceImpl implements PromoService {
         ItemDto item = itemService.getItemDetailById(promoDo.getItemId());
         String key = "promo_item_stock_" + item.getId();
         redisService.put(key, String.valueOf(item.getStock()));
+
+        // 控制流量大闸的数量 （库存的3倍）
+        redisService.put("promo_door_count_" + item.getId(), String.valueOf(item.getStock() * 3));
 
     }
 

@@ -101,8 +101,8 @@ public class OrderController {
         if (ObjectUtils.isEmpty(userDOStr))
             throw new BussinesssError(ErrorEnum.USER_NOT_LOGIN);
 
-        UserDO userDO = new Gson().fromJson(userDOStr, UserDO.class);
 
+        UserDO userDO = new Gson().fromJson(userDOStr, UserDO.class);
         // 有活动时生成令牌
         if(promoId != null) {
             // 校验并生成令牌
@@ -111,6 +111,8 @@ public class OrderController {
                 throw new BussinesssError(ErrorEnum.PROMO_TOKEN_ERROR);
             }
 
+            // 大闸数量扣减
+            redisService.decrement("promo_door_count_" + itemId, 1);
             return CommonReturnType.create(promoToken);
         }
 
