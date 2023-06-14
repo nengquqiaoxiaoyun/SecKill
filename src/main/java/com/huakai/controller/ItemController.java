@@ -98,10 +98,6 @@ public class ItemController {
             throw new BussinesssError(ErrorEnum.ITEM_NOT_EXIST);
         }
 
-        // 将查询到的结果放入 Redis 和本地缓存中
-        redisService.put("item_" + id, new Gson().toJson(itemDto), 10, TimeUnit.MINUTES);
-        localCacheService.put("item_" + id, itemDto);
-
         // 获取查询到的商品的秒杀信息
         PromoDto promoDto = itemDto.getPromoDto();
         // 若秒杀信息为空，则默认设置为没有秒杀
@@ -110,6 +106,12 @@ public class ItemController {
             innerPromo.setStatus(0);
             itemDto.setPromoDto(innerPromo);
         }
+
+        // 将查询到的结果放入 Redis 和本地缓存中
+        redisService.put("item_" + id, new Gson().toJson(itemDto), 10, TimeUnit.MINUTES);
+        localCacheService.put("item_" + id, itemDto);
+
+
         // 返回查询到的商品信息
         return CommonReturnType.create(itemDto);
     }

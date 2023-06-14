@@ -12,6 +12,7 @@ import com.huakai.response.CommonReturnType;
 import com.huakai.service.OrderService;
 import com.huakai.service.PromoService;
 import com.huakai.service.StockLogService;
+import com.huakai.util.CaptchaUtil;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * @author: huakaimay
@@ -114,7 +115,8 @@ public class OrderController {
     @PostMapping("/generateToken")
     public CommonReturnType generateToken(@RequestParam("itemId") Integer itemId,
                                           @RequestParam(value = "promoId", required = false) Integer promoId,
-                                          @RequestParam("token") String token) throws BussinesssError {
+                                          @RequestParam("token") String token,
+                                          @RequestParam("verifyCode") String verifyCode) throws BussinesssError {
 
         if (StringUtils.isEmpty(token))
             throw new BussinesssError(ErrorEnum.USER_NOT_LOGIN);
@@ -125,10 +127,20 @@ public class OrderController {
 
 
         UserDO userDO = new Gson().fromJson(userDOStr, UserDO.class);
+
+        String vCode = redisService.get("verify_code_user_" + userDO.getId());
+        if (vCode == null)
+            throw new BussinesssError(ErrorEnum.VERIFY_CODE_ERROR);
+
+        if (!verifyCode.equals(vCode))
+            throw new BussinesssError(ErrorEnum.VERIFY_CODE_ERROR);
+
         // 有活动时生成令牌
         if (promoId != null) {
+
             // 校验并生成令牌
             String promoToken = promoService.generateScToken(promoId, itemId, userDO.getId());
+            // 因为活动尚未开始导致生成令牌时没有生成redis所以这边直接显示未登录
             if (promoToken == null) {
                 throw new BussinesssError(ErrorEnum.PROMO_TOKEN_ERROR);
             }
@@ -139,6 +151,27 @@ public class OrderController {
         }
 
         return CommonReturnType.create(null);
+    }
+
+
+    @GetMapping("/generateverifycode")
+    public void generateverifycode(@RequestParam("token") String token, HttpServletResponse response) throws BussinesssError, IOException {
+        if (StringUtils.isEmpty(token))
+            throw new BussinesssError(ErrorEnum.USER_NOT_LOGIN);
+
+        String userDOStr = redisService.get(token);
+        if (ObjectUtils.isEmpty(userDOStr))
+            throw new BussinesssError(ErrorEnum.USER_NOT_LOGIN);
+
+        // 生成验证码
+        String code = CaptchaUtil.generateCaptchaString();
+
+        // 验证码存五分钟
+        redisService.put("verify_code_user_" + new Gson().fromJson(userDOStr, UserDO.class).getId(), code, 5, TimeUnit.MINUTES);
+        System.out.printf("验证码：%s%n", code);
+        // 生成图片
+        BufferedImage captchaImage = CaptchaUtil.createCaptchaImage(code);
+        CaptchaUtil.saveCaptchaImage(captchaImage, response.getOutputStream());
     }
 
 
