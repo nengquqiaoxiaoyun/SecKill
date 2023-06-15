@@ -1,5 +1,6 @@
 package com.huakai.controller;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.Gson;
 import com.huakai.config.RedisService;
 import com.huakai.controller.dto.ItemAmount;
@@ -56,8 +57,12 @@ public class OrderController {
 
     private ExecutorService executorService;
 
+    private RateLimiter rateLimiter;
+
     @PostConstruct
     private void init() {
+        // 每秒运行执行的次数，应该更具tps来创建一个合适的值，比如我们有两台服务800tps，那么保护性的可以设置350
+        rateLimiter = RateLimiter.create(300);
         executorService = Executors.newFixedThreadPool(20);
     }
 
@@ -68,6 +73,8 @@ public class OrderController {
                                         @RequestParam(value = "promoToken", required = false) String promoToken,
                                         @RequestParam("token") String token) throws BussinesssError {
 
+        if(!rateLimiter.tryAcquire())
+            throw new BussinesssError(ErrorEnum.SYSTEM_BUSY);
 
         if (StringUtils.isEmpty(token))
             throw new BussinesssError(ErrorEnum.USER_NOT_LOGIN);

@@ -27,6 +27,7 @@ public enum ErrorEnum implements CommonError {
     PROMO_TOKEN_ERROR(30002, "活动令牌获取失败"),
     MQ_SEND_FAIL(30001, "异步消息发送失败"),
     VERIFY_CODE_ERROR(30002, "验证码错误"),
+    SYSTEM_BUSY(40001, "对不起，系统繁忙，请稍后再试"),
     ;
 
     ErrorEnum(int errorCode, String errorMsg) {
