@@ -63,6 +63,7 @@ public class OrderController {
     private void init() {
         // 每秒运行执行的次数，应该更具tps来创建一个合适的值，比如我们有两台服务800tps，那么保护性的可以设置350
         rateLimiter = RateLimiter.create(300);
+        // 20个线程池，多出的排队
         executorService = Executors.newFixedThreadPool(20);
     }
 
@@ -101,6 +102,7 @@ public class OrderController {
                 throw new BussinesssError(ErrorEnum.PARAMTER_VALIDATION_ERROR, "秒杀令牌错误");
         }
 
+        // 拥塞窗口为20的等待队列，用来队列化泄洪
         Future<Object> future = executorService.submit(() -> {
             // 处理库存请求
             handleStockRequest(itemId, promoId, amount, userDO.getId());
